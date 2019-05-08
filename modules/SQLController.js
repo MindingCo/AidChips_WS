@@ -149,6 +149,7 @@ sqlController.delChip = (req, res) =>
 };
 sqlController.getChips = (req, res) =>
 {
+    console.log(`Value of owner: _${req.body.owner}_`);
     // SELECT id_chp, nse_chp, npr_chp, cel_chp FROM permit NATURAL JOIN chip NATURAL JOIN user WHERE id_usu = ? and pro_per = ? and act_per = 1
     connection.query('SELECT id_chp, nse_chp, npr_chp, cel_chp FROM permit NATURAL JOIN chip WHERE id_usu = ? and pro_per = ? and act_per = 1', [req.body.id, req.body.owner==="true"? 1:0], (error, result)  =>
     {
