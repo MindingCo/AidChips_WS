@@ -150,7 +150,7 @@ sqlController.delChip = (req, res) =>
 sqlController.getChips = (req, res) =>
 {
     // SELECT id_chp, nse_chp, npr_chp, cel_chp FROM permit NATURAL JOIN chip NATURAL JOIN user WHERE id_usu = ? and pro_per = ? and act_per = 1
-    connection.query('SELECT id_chp, nse_chp, npr_chp, cel_chp FROM permit NATURAL JOIN chip WHERE id_usu = ? and pro_per = ? and act_per = 1', [req.body.id, req.body.owner==true? 1:0], (error, result)  =>
+    connection.query('SELECT id_chp, nse_chp, npr_chp, cel_chp FROM permit NATURAL JOIN chip WHERE id_usu = ? and pro_per = ? and act_per = 1', [req.body.id, req.body.owner==="true"? 1:0], (error, result)  =>
     {
         if (error) throw error;
         res.send((result.length === 0) ? null : result)
@@ -165,11 +165,11 @@ sqlController.addPermit = (req, res) =>
 
     getIdChipByNSerie(nSerie, idChip =>
     {
-        exitsPermit(id, idChip, owner===true? 1:0, (exits) =>
+        exitsPermit(id, idChip, owner==="true"? 1:0, (exits) =>
         {
             if (exits) res.send(false);
             else
-                connection.query('INSERT INTO permit VALUES(0, ?, ?, ?, 1)', [id, idChip, owner===true? 1:0], error =>
+                connection.query('INSERT INTO permit VALUES(0, ?, ?, ?, 1)', [id, idChip, owner==="true"? 1:0], error =>
                 {
                     if (error) throw error;
                     else res.send(true)
@@ -179,7 +179,7 @@ sqlController.addPermit = (req, res) =>
 };
 sqlController.getPermit = (req, res) =>
 {
-    connection.query('SELECT id_per, id_usu, id_chp, pro_per FROM permit WHERE id_usu = ? and id_chp = ? and pro_per = ? LIMIT 1', [req.body.id, req.body.nserie, req.body.owner===true? 1:0], (error, result) =>
+    connection.query('SELECT id_per, id_usu, id_chp, pro_per FROM permit WHERE id_usu = ? and id_chp = ? and pro_per = ? LIMIT 1', [req.body.id, req.body.nserie, req.body.owner==="true"? 1:0], (error, result) =>
     {
         if (error) throw error;
         res.send((result.length === 0) ? null : result[0])
@@ -189,7 +189,7 @@ sqlController.delPermit = (req, res) =>
 {
     getIdChipByNSerie(req.body.nserie, idChip =>
     {
-        connection.query('DELETE FROM permit WHERE id_usu = ? and id_chp = ? and pro_per = ?', [req.body.id, idChip, req.body.owner===true? 1:0], error =>
+        connection.query('DELETE FROM permit WHERE id_usu = ? and id_chp = ? and pro_per = ?', [req.body.id, idChip, req.body.owner==="true"? 1:0], error =>
         {
             if (error) throw error;
             else res.send(true)
@@ -198,7 +198,7 @@ sqlController.delPermit = (req, res) =>
 };
 // sqlController.getReceivedPermits = (req, res) =>
 // {
-//     connection.query('SELECT nse_chp, id_usu, nmc_usu, tel_usu, img_usu from permit ', [req.body.id, idChip, req.body.owner===true? 1:0], error =>
+//     connection.query('SELECT nse_chp, id_usu, nmc_usu, tel_usu, img_usu from permit ', [req.body.id, idChip, req.body.owner==="true"? 1:0], error =>
 //     {
 //         if (error) throw error;
 //         else res.send(true)
