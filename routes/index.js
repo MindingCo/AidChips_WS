@@ -45,4 +45,17 @@ router.post('/get/permit', (req, res) =>
 router.post('/del/permit', (req, res) =>
     sqlController.delPermit(req, res) );
 
+router.post('/get/receivedpermits', (req, res) =>
+    sqlController.getReceivedPermits(req, res) );
+router.post('/get/givenpermits', (req, res) =>
+    sqlController.getGivenPermits(req, res) );
+
+//  Alert Crud
+router.post('/add/alert', (req, res) =>
+    sqlController.addPermit(req, res) );
+router.post('/get/requestalerts', (req, res) =>
+    sqlController.getRequestAlerts(req, res) );
+router.post('/get/accessalerts', (req, res) =>
+    sqlController.getAccessAlerts(req, res) );
+
 module.exports = router;
