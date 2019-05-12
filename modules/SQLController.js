@@ -16,6 +16,7 @@ function getIdChipByNSerie(nSerie, cb)
 {
     connection.query('SELECT id_chp FROM chip WHERE nse_chp = ? LIMIT 1', [nSerie], (error, result) =>
     {
+        console.log(result);
         if (error) throw error;
         else // execute callback 'cuz without cb return a undefined value (async)
             cb(result.id_chp)
