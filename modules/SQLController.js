@@ -163,6 +163,9 @@ sqlController.addPermit = (req, res) =>
     const nSerie = req.body.nserie;
     const owner = req.body.owner; //    should be boolean
 
+    console.log("Numero de serie:");
+    console.log(nSerie);
+
     getIdChipByNSerie(nSerie, idChip =>
     {
         exitsPermit(id, idChip, owner==="true"? 1:0, (exits) =>
