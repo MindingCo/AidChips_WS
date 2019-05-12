@@ -41,7 +41,7 @@ function exitsChip(nSerie, cb)
 }
 function exitsPermit(userId, chipId, typePermit, cb)
 {
-    connection.query('SELECT id_usu FROM permit WHERE id_usu = ? id_chp = ? and and pro_per = ? LIMIT 1', [userId, chipId, typePermit], (error, result) =>
+    connection.query('SELECT id_usu FROM permit WHERE id_usu = ? and id_chp = ? and pro_per = ? LIMIT 1', [userId, chipId, typePermit], (error, result) =>
     {
         if (error) throw error;
         else // execute callback 'cuz without cb return a undefined value (async)
