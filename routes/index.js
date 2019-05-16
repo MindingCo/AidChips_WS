@@ -8,6 +8,8 @@ router.get('/', (req, res) =>
 //  User Crud
 router.post('/login', (req, res) =>
     sqlController.getUserForLogin(req, res) );
+router.post('/typeofpermit', (req, res) =>
+    sqlController.typeOfUser(req, res) );
 
 router.post('/add/user', (req, res) =>
     sqlController.addUser(req, res) );
@@ -36,6 +38,11 @@ router.post('/del/chip', (req, res) =>
     sqlController.delChip(req, res) );
 router.post('/get/chips', (req, res) =>
     sqlController.getChips(req, res) );
+
+//  Alert Crud
+router.post('/add/alert', (req, res) =>
+    sqlController.addAlert(req, res) );
+
 
 //  Permit Crud
 router.post('/add/permit', (req, res) =>

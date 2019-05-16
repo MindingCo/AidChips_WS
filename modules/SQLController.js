@@ -21,6 +21,15 @@ function getIdChipByNSerie(nSerie, cb)
             cb(result[0].id_chp)
     })
 }
+function getIdPermit(idUser, idChip, cb)
+{
+    connection.query('SELECT id_per FROM permit WHERE id_usu = ? AND id_chp = ? LIMIT 1', [idUser, idChip], (error, result) =>
+    {
+        if (error) throw error;
+        else // execute callback 'cuz without cb return a undefined value (async)
+            cb(result[0].id_per)
+    })
+}
 function exitsUser(name, cb)
 {
     connection.query('SELECT nmc_usu FROM user WHERE nmc_usu = ? LIMIT 1', [name], (error, result) =>
@@ -148,14 +157,23 @@ sqlController.delChip = (req, res) =>
     })
 };
 sqlController.getChips = (req, res) =>
-{
     // SELECT id_chp, nse_chp, npr_chp, cel_chp FROM permit NATURAL JOIN chip NATURAL JOIN user WHERE id_usu = ? and pro_per = ? and act_per = 1
     connection.query('SELECT id_chp, nse_chp, npr_chp, cel_chp FROM permit NATURAL JOIN chip WHERE id_usu = ? and pro_per = ? and act_per = 1', [req.body.id, req.body.owner==="true"? 1:0], (error, result)  =>
     {
         if (error) throw error;
         else res.send((result.length === 0) ? null : result)
-    })
-};
+    });
+
+sqlController.addAlert = (req, res) =>
+    getIdChipByNSerie(req.body.nserie, (idChip) =>
+        getIdPermit(req.body.id, idChip, (idPermit) =>
+            connection.query('INSERT INTO notif VALUES(0, ?, ?, CURRENT_TIMESTAMP)', [idPermit, req.body.type], (error)  =>
+            {
+                if (error) throw error;
+                else res.send(true)
+            })
+        )
+    );
 
 sqlController.addPermit = (req, res) =>
 {
@@ -182,7 +200,7 @@ sqlController.addPermit = (req, res) =>
 };
 sqlController.getPermit = (req, res) =>
 {
-    connection.query('SELECT id_per, id_usu, id_chp, pro_per FROM permit WHERE id_usu = ? and id_chp = ? and pro_per = ? LIMIT 1', [req.body.id, req.body.nserie, req.body.owner==="true"? 1:0], (error, result) =>
+    connection.query('SELECT id_per, id_usu, id_chp, pro_per FROM permit WHERE id_usu = ? AND id_chp = ? AND pro_per = ? LIMIT 1', [req.body.id, req.body.nserie, req.body.owner==="true"? 1:0], (error, result) =>
     {
         if (error) throw error;
         else res.send((result.length === 0) ? null : result[0])
@@ -192,7 +210,7 @@ sqlController.delPermit = (req, res) =>
 {
     getIdChipByNSerie(req.body.nserie, idChip =>
     {
-        connection.query('DELETE FROM permit WHERE id_usu = ? and id_chp = ? and pro_per = ?', [req.body.id, idChip, req.body.owner==="true"? 1:0], error =>
+        connection.query('DELETE FROM permit WHERE id_usu = ? AND id_chp = ? AND pro_per = ?', [req.body.id, idChip, req.body.owner==="true"? 1:0], error =>
         {
             if (error) throw error;
             else res.send(true)
@@ -202,7 +220,7 @@ sqlController.delPermit = (req, res) =>
 
 sqlController.getReceivedPermits = (req, res) =>
 {
-    connection.query('call recivedPermits(?)', [req.body.id], (error, result) =>
+    connection.query('CALL recivedPermits(?)', [req.body.id], (error, result) =>
     {
         if (error) throw error;
         else res.send((result.length === 0) ? null : result)
@@ -210,7 +228,7 @@ sqlController.getReceivedPermits = (req, res) =>
 };
 sqlController.getGivenPermits = (req, res) =>
 {
-    connection.query('call givedPermits(?)', [req.body.id], (error, result) =>
+    connection.query('CALL givedPermits(?)', [req.body.id], (error, result) =>
     {
         if (error) throw error;
         else res.send((result.length === 0) ? null : result)
@@ -219,7 +237,7 @@ sqlController.getGivenPermits = (req, res) =>
 
 sqlController.getRequestAlerts = (req, res) =>
 {
-    connection.query('call not_sol(?)', [req.body.id], (error, result) =>
+    connection.query('CALL not_sol(?)', [req.body.id], (error, result) =>
     {
         if (error) throw error;
         else res.send((result.length === 0) ? null : result)
@@ -227,10 +245,19 @@ sqlController.getRequestAlerts = (req, res) =>
 };
 sqlController.getAccessAlerts = (req, res) =>
 {
-    connection.query('call not_sol(?)', [req.body.id], (error, result) =>
+    connection.query('CALL not_sol(?)', [req.body.id], (error, result) =>
     {
         if (error) throw error;
         else res.send((result.length === 0) ? null : result)
+    })
+};
+
+sqlController.typeOfUser = (req, res) =>
+{
+    connection.query('SELECT pro_per FROM permit WHERE id_usu = ? AND id_chp = ? LIMIT 1', [req.body.id], (error, result) =>
+    {
+        if (error) throw error;
+        else res.send((result.length === 0) ? null : !!(result[0].pro_per = 1))
     })
 };
 
