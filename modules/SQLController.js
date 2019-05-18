@@ -254,7 +254,7 @@ sqlController.getAccessAlerts = (req, res) =>
 
 sqlController.typeOfUser = (req, res) =>
 {
-    connection.query('SELECT pro_per FROM permit WHERE id_usu = ? AND id_chp = ? LIMIT 1', [req.body.id], (error, result) =>
+    connection.query('SELECT pro_per FROM permit WHERE id_usu = ? AND id_chp = ? LIMIT 1', [req.body.id, req.body.nserie], (error, result) =>
     {
         if (error) throw error;
         else res.send((result.length === 0) ? null : !!(result[0].pro_per = 1))
