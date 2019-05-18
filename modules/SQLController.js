@@ -167,7 +167,7 @@ sqlController.getChips = (req, res) =>
 sqlController.addAlert = (req, res) =>
     getIdChipByNSerie(req.body.nserie, (idChip) =>
         getIdPermit(req.body.id, idChip, (idPermit) =>
-            connection.query('INSERT INTO notif VALUES(0, ?, ?, CURRENT_TIMESTAMP)', [idPermit, req.body.type], (error)  =>
+            connection.query('INSERT INTO notif VALUES(0, ?, ?, CURRENT_TIMESTAMP)', [idPermit, parseInt(req.body.type)], (error)  =>
             {
                 if (error) throw error;
                 else res.send(true)
