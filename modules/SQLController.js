@@ -5,7 +5,7 @@ const connection = mysql.createConnection(config);
 
 function getIdUserByName(name, cb)
 {
-    connection.query('SELECT id_usu FROM user WHERE nmc_usu = ? LIMIT 1', [name], (error, result) =>
+    connection.query('SELECT id_usu FROM user WHERE nom_usu = ? LIMIT 1', [name], (error, result) =>
     {
         if (error) throw error;
         else // execute callback 'cuz without cb return a undefined value (async)
@@ -23,7 +23,7 @@ function getIdPermit(idUser, idChip, cb)
 }
 function exitsUser(name, cb)
 {
-    connection.query('SELECT id_usu FROM user WHERE nmc_usu = ? LIMIT 1', [name], (error, result) =>
+    connection.query('SELECT id_usu FROM user WHERE nom_usu = ? LIMIT 1', [name], (error, result) =>
     {
         if (error) throw error;
         else // execute callback 'cuz without cb return a undefined value (async)
@@ -80,7 +80,7 @@ sqlController.getUserById = (req, res) =>
 sqlController.getUserByName = (req, res) =>
 {
     const name = req.body.name;
-    connection.query('SELECT * FROM publicUser WHERE nmc_usu = ? LIMIT 1', [name], (error, result) =>
+    connection.query('SELECT * FROM publicUser WHERE nom_usu = ? LIMIT 1', [name], (error, result) =>
     {
         if (error) throw error;
         else res.send((result.length === 0) ? null : result[0])
@@ -107,7 +107,7 @@ sqlController.delUserById = (req, res) =>
 sqlController.delUserByName = (req, res) =>
 {
     const name = req.body.name;
-    connection.query('DELETE FROM user WHERE nmc_usu = ?', [name], error =>
+    connection.query('DELETE FROM user WHERE nom_usu = ?', [name], error =>
     {
         if (error) throw error;
         else res.send(true)
