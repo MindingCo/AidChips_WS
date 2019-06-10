@@ -12,18 +12,9 @@ function getIdUserByName(name, cb)
             cb(result.id_usu)
     })
 }
-function getIdChipByNSerie(nSerie, cb)
-{
-    connection.query('SELECT id_chp FROM chip WHERE nse_chp = ? LIMIT 1', [nSerie], (error, result) =>
-    {
-        if (error) throw error;
-        else // execute callback 'cuz without cb return a undefined value (async)
-            cb(result[0].id_chp)
-    })
-}
 function getIdPermit(idUser, idChip, cb)
 {
-    connection.query('SELECT id_per FROM permit WHERE id_usu = ? AND id_chp = ? LIMIT 1', [idUser, idChip], (error, result) =>
+    connection.query('SELECT id_per FROM permit WHERE id_usu = ? AND nse_chp = ? LIMIT 1', [idUser, idChip], (error, result) =>
     {
         if (error) throw error;
         else // execute callback 'cuz without cb return a undefined value (async)
@@ -32,7 +23,7 @@ function getIdPermit(idUser, idChip, cb)
 }
 function exitsUser(name, cb)
 {
-    connection.query('SELECT nmc_usu FROM user WHERE nmc_usu = ? LIMIT 1', [name], (error, result) =>
+    connection.query('SELECT id_usu FROM user WHERE nmc_usu = ? LIMIT 1', [name], (error, result) =>
     {
         if (error) throw error;
         else // execute callback 'cuz without cb return a undefined value (async)
@@ -50,7 +41,7 @@ function exitsChip(nSerie, cb)
 }
 function exitsPermit(userId, chipId, typePermit, cb)
 {
-    connection.query('SELECT id_usu FROM permit WHERE id_usu = ? and id_chp = ? and pro_per = ? LIMIT 1', [userId, chipId, typePermit], (error, result) =>
+    connection.query('SELECT id_per FROM permit WHERE id_usu = ? and nse_chp = ? and own_per = ? LIMIT 1', [userId, chipId, typePermit], (error, result) =>
     {
         if (error) throw error;
         else // execute callback 'cuz without cb return a undefined value (async)
@@ -80,7 +71,7 @@ sqlController.addUser = (req, res) =>
 sqlController.getUserById = (req, res) =>
 {
     const id = req.body.id;
-    connection.query('SELECT id_usu, nmc_usu, ema_usu, cel_usu, img_usu FROM user WHERE id_usu = ? LIMIT 1', [id], (error, result) =>
+    connection.query('SELECT * FROM publicUser WHERE id_usu = ? LIMIT 1', [id], (error, result) =>
     {
         if (error) throw error;
         else res.send((result.length === 0) ? null : result[0])
@@ -89,7 +80,7 @@ sqlController.getUserById = (req, res) =>
 sqlController.getUserByName = (req, res) =>
 {
     const name = req.body.name;
-    connection.query('SELECT id_usu, nmc_usu, ema_usu, cel_usu, img_usu FROM user WHERE nmc_usu = ? LIMIT 1', [name], (error, result) =>
+    connection.query('SELECT * FROM publicUser WHERE nmc_usu = ? LIMIT 1', [name], (error, result) =>
     {
         if (error) throw error;
         else res.send((result.length === 0) ? null : result[0])
@@ -133,7 +124,7 @@ sqlController.addChip = (req, res) =>
     {
         if (exits) res.send(false);
         else
-            connection.query('INSERT INTO chip VALUES(0, ?, ?, ?, 1)', [nserie, ownName, tel], error =>
+            connection.query('INSERT INTO chip VALUES(?, ?, ?)', [nserie, ownName, tel], error =>
             {
                 if (error) throw error;
                 else res.send(true)
@@ -142,7 +133,7 @@ sqlController.addChip = (req, res) =>
 };
 sqlController.getChip = (req, res) =>
 {
-    connection.query('SELECT id_chp, nse_chp, npr_chp, cel_chp FROM chip WHERE nse_chp = ? and act_chp = 1 LIMIT 1', [req.body.nserie], (error, result) =>
+    connection.query('SELECT * FROM chip WHERE nse_chp = ? LIMIT 1', [req.body.nserie], (error, result) =>
     {
         if (error) throw error;
         else res.send((result.length === 0) ? null : result[0])
@@ -157,23 +148,19 @@ sqlController.delChip = (req, res) =>
     })
 };
 sqlController.getChips = (req, res) =>
-    // SELECT id_chp, nse_chp, npr_chp, cel_chp FROM permit NATURAL JOIN chip NATURAL JOIN user WHERE id_usu = ? and pro_per = ? and act_per = 1
-    connection.query('SELECT id_chp, nse_chp, npr_chp, cel_chp FROM permit NATURAL JOIN chip WHERE id_usu = ? and pro_per = ? and act_per = 1', [req.body.id, req.body.owner==="true"? 1:0], (error, result)  =>
+    // SELECT nse_chp, nse_chp, npr_chp, cel_chp FROM permit NATURAL JOIN chip NATURAL JOIN user WHERE id_usu = ? and own_per = ? and act_per = 1
+    connection.query('SELECT * FROM myChips WHERE me = ?', [req.body.id], (error, result)  =>
     {
         if (error) throw error;
         else res.send((result.length === 0) ? null : result)
     });
 
-sqlController.addAlert = (req, res) =>
-    getIdChipByNSerie(req.body.nserie, (idChip) =>
-        getIdPermit(req.body.id, idChip, (idPermit) =>
-            connection.query('INSERT INTO notif VALUES(0, ?, ?, CURRENT_TIMESTAMP)', [idPermit, parseInt(req.body.type)], (error)  =>
-            {
-                if (error) throw error;
-                else res.send(true)
-            })
-        )
-    );
+sqlController.addNotif = (req, res) =>
+    connection.query('INSERT INTO notif VALUES(0, ?, ?, ?, ?)', [parseInt(req.body.type), req.body.fec, req.body.id, req.body.nserie], (error)  =>
+    {
+        if (error) throw error;
+        else res.send(true)
+    });
 
 sqlController.addPermit = (req, res) =>
 {
@@ -184,23 +171,20 @@ sqlController.addPermit = (req, res) =>
     console.log("Numero de serie:");
     console.log(nSerie);
 
-    getIdChipByNSerie(nSerie, idChip =>
+    exitsPermit(id, idChip, owner==="true"? 1:0, (exits) =>
     {
-        exitsPermit(id, idChip, owner==="true"? 1:0, (exits) =>
-        {
-            if (exits) res.send(false);
-            else
-                connection.query('INSERT INTO permit VALUES(0, ?, ?, ?, 1)', [id, idChip, owner==="true"? 1:0], error =>
-                {
-                    if (error) throw error;
-                    else res.send(true)
-                })
-        })
+        if (exits) res.send(false);
+        else
+            connection.query('INSERT INTO permit VALUES(0, ?, ?, ?)', [owner==="true"? 1:0, id, idChip], error =>
+            {
+                if (error) throw error;
+                else res.send(true)
+            })
     })
 };
 sqlController.getPermit = (req, res) =>
 {
-    connection.query('SELECT id_per, id_usu, id_chp, pro_per FROM permit WHERE id_usu = ? AND id_chp = ? AND pro_per = ? LIMIT 1', [req.body.id, req.body.nserie, req.body.owner==="true"? 1:0], (error, result) =>
+    connection.query('SELECT * FROM permit WHERE id_usu = ? AND nse_chp = ? AND own_per = ? LIMIT 1', [req.body.id, req.body.nserie, req.body.owner==="true"? 1:0], (error, result) =>
     {
         if (error) throw error;
         else res.send((result.length === 0) ? null : result[0])
@@ -208,19 +192,16 @@ sqlController.getPermit = (req, res) =>
 };
 sqlController.delPermit = (req, res) =>
 {
-    getIdChipByNSerie(req.body.nserie, idChip =>
+    connection.query('DELETE FROM permit WHERE id_usu = ? AND nse_chp = ? AND own_per = ?', [req.body.id, req.body.nserie, req.body.owner==="true"? 1:0], error =>
     {
-        connection.query('DELETE FROM permit WHERE id_usu = ? AND id_chp = ? AND pro_per = ?', [req.body.id, idChip, req.body.owner==="true"? 1:0], error =>
-        {
-            if (error) throw error;
-            else res.send(true)
-        })
+        if (error) throw error;
+        else res.send(true)
     })
 };
 
 sqlController.getReceivedPermits = (req, res) =>
 {
-    connection.query('CALL recivedPermits(?)', [req.body.id], (error, result) =>
+    connection.query('SELECT * FROM receivedPermits WHERE me = ?', [req.body.id], (error, result) =>
     {
         if (error) throw error;
         else res.send((result.length === 0) ? null : result)
@@ -228,24 +209,16 @@ sqlController.getReceivedPermits = (req, res) =>
 };
 sqlController.getGivenPermits = (req, res) =>
 {
-    connection.query('CALL givedPermits(?)', [req.body.id], (error, result) =>
+    connection.query('SELECT * FROM givenPermits WHERE me = ?', [req.body.id], (error, result) =>
     {
         if (error) throw error;
         else res.send((result.length === 0) ? null : result)
     })
 };
 
-sqlController.getRequestAlerts = (req, res) =>
+sqlController.getNotifs = (req, res) =>
 {
-    connection.query('CALL not_sol(?)', [req.body.id], (error, result) =>
-    {
-        if (error) throw error;
-        else res.send((result.length === 0) ? null : result)
-    })
-};
-sqlController.getAccessAlerts = (req, res) =>
-{
-    connection.query('CALL not_sol(?)', [req.body.id], (error, result) =>
+    connection.query('SELECT * FROM myNotifs WHERE me = ?', [req.body.id], (error, result) =>
     {
         if (error) throw error;
         else res.send((result.length === 0) ? null : result)
@@ -254,10 +227,10 @@ sqlController.getAccessAlerts = (req, res) =>
 
 sqlController.typeOfUser = (req, res) =>
     getIdChipByNSerie(req.body.nserie, idChip =>
-        connection.query('SELECT pro_per FROM permit WHERE id_usu = ? AND id_chp = ? LIMIT 1', [req.body.id, idChip], (error, result) =>
+        connection.query('SELECT own_per FROM permit WHERE id_usu = ? AND nse_chp = ? LIMIT 1', [req.body.id, idChip], (error, result) =>
         {
             if (error) throw error;
-            else res.send((result.length === 0) ? null : !!(result[0].pro_per = 1))
+            else res.send((result.length === 0) ? null : !!(result[0].own_per = 1))
         })
     );
 

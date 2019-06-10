@@ -34,15 +34,10 @@ router.post('/add/chip', (req, res) =>
     sqlController.addChip(req, res) );
 router.post('/get/chip', (req, res) =>
     sqlController.getChip(req, res) );
-router.post('/del/chip', (req, res) =>
-    sqlController.delChip(req, res) );
 router.post('/get/chips', (req, res) =>
     sqlController.getChips(req, res) );
-
-//  Alert Crud
-router.post('/add/alert', (req, res) =>
-    sqlController.addAlert(req, res) );
-
+router.post('/del/chip', (req, res) =>
+    sqlController.delChip(req, res) );
 
 //  Permit Crud
 router.post('/add/permit', (req, res) =>
@@ -58,11 +53,9 @@ router.post('/get/givenpermits', (req, res) =>
     sqlController.getGivenPermits(req, res) );
 
 //  Alert Crud
-router.post('/add/alert', (req, res) =>
-    sqlController.addPermit(req, res) );
-router.post('/get/requestalerts', (req, res) =>
-    sqlController.getRequestAlerts(req, res) );
-router.post('/get/accessalerts', (req, res) =>
-    sqlController.getAccessAlerts(req, res) );
+router.post('/add/notif', (req, res) =>
+    sqlController.addNotif(req, res) );
+router.post('/get/notif', (req, res) =>
+    sqlController.getNotifs(req, res) );
 
 module.exports = router;
