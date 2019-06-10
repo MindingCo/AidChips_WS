@@ -89,7 +89,7 @@ sqlController.getUserByName = (req, res) =>
 sqlController.getUserForLogin = (req, res) =>
 {
     const name = req.body.name;
-    connection.query('SELECT * FROM user WHERE nmc_usu = ? LIMIT 1', [name], (error, result) =>
+    connection.query('SELECT * FROM user WHERE nom_usu = ? LIMIT 1', [name], (error, result) =>
     {
         if (error) throw error;
         else res.send((result.length === 0) ? null : result[0])
